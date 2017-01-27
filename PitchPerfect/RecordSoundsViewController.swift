@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  RecordSoundsViewController.swift
 //  PitchPerfect
 //
 //  Created by Jacob Gumbrill on 1/4/17.
@@ -20,17 +20,15 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         stopRecordingButton.isEnabled = false
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        print("viewWillAppear called")
+        stopRecordingButton.isEnabled = false
+        recordButton.imageView?.contentMode = .scaleAspectFit
+        stopRecordingButton.imageView?.contentMode = .scaleAspectFit
+        recordingLabel.numberOfLines = 1
+        recordingLabel.adjustsFontSizeToFitWidth = true
     }
 
     @IBAction func recordAudio(_ sender: AnyObject) {
-        recordingLabel.text = "recording in progress"
-        stopRecordingButton.isEnabled = true
-        recordButton.isEnabled = false
+        setUIState(couldRecord: false)
         
         let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory,.userDomainMask, true)[0] as String
         let recordingName = "recordedVoice.wav"
@@ -48,12 +46,17 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     }
 
     @IBAction func stopRecording(_ sender: Any) {
-        recordButton.isEnabled = true
-        stopRecordingButton.isEnabled = false
-        recordingLabel.text = "tap to record"
+        setUIState(couldRecord: true)
+        
         audioRecorder.stop()
         let audioSession = AVAudioSession.sharedInstance()
         try! audioSession.setActive(false)
+    }
+    
+    func setUIState(couldRecord: Bool) {
+        stopRecordingButton.isEnabled = !couldRecord
+        recordButton.isEnabled = couldRecord
+        recordingLabel.text = couldRecord ? "Tap to Record" : "Recording in Progress"
     }
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
@@ -63,6 +66,7 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
             print("Recording was not successful")
         }
     }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "stopRecording" {
             let playSoundsVC = segue.destination as! PlaySoundsViewController
